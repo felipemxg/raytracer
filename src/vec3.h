@@ -7,22 +7,22 @@
 
 struct vec3 {
     union {
-        float x = 0, r;
+        double x = 0, r;
     };
     union {
-        float y = 0, g;
+        double y = 0, g;
     };
     union {
-        float z = 0, b;
+        double z = 0, b;
     };
 
     inline vec3() = default;
-    inline vec3(float f) : x(f), y(f), z(f) {}
-    inline vec3(float x, float y, float z) : x(x), y(y), z(z) {}
-    inline vec3(float v[3]) : x(v[0]), y(v[1]), z(v[2]) {}
+    inline vec3(double f) : x(f), y(f), z(f) {}
+    inline vec3(double x, double y, double z) : x(x), y(y), z(z) {}
+    inline vec3(double v[3]) : x(v[0]), y(v[1]), z(v[2]) {}
     inline vec3(const vec3 &v) : x(v.x), y(v.y), z(v.z) {}
 
-    inline vec3 operator=(float f) {
+    inline vec3 operator=(double f) {
         x = f;
         y = f;
         z = f;
@@ -34,27 +34,15 @@ struct vec3 {
         z = v.z;
         return *this;
     }
-    inline float& operator[](int i) {
+    inline double& operator[](int i) {
         assert(i >= 0 && i < 3);
         return (&x)[i];
     }
-    inline const float& operator[](int i) const {
+    inline const double& operator[](int i) const {
         assert(i >= 0 && i < 3);
         return (&x)[i];
     }
 
-    inline vec3 operator+(const vec3 v) {
-        return { x + v.x, y + v.y, z + v.z };
-    }
-    inline vec3 operator-(const vec3 v) {
-        return { x - v.x, y - v.y, z - v.z };
-    }
-    inline vec3 operator*(float s) {
-        return { x * s, y * s, z * s };
-    }
-    inline vec3 operator/(float s) {
-        return { x / s, y / s, z / s };
-    }
     inline vec3 operator+=(const vec3 v) {
         x += v.x;
         y += v.y;
@@ -67,40 +55,48 @@ struct vec3 {
         z -= v.z;
         return *this;
     }
-    inline vec3 operator*=(float s) {
+    inline vec3 operator*=(double s) {
         x *= s;
         y *= s;
         z *= s;
         return *this;
     }
-    inline vec3 operator/=(float s) {
+    inline vec3 operator/=(double s) {
         x /= s;
         y /= s;
         z /= s;
         return *this;
     }
 
-    inline float lensq() {
+    inline double lensq() {
         return (x * x) + (y * y) + (z * z);
     }
 
-    inline float len() {
+    inline double len() {
         return sqrt(lensq());
-    }
-
-    inline vec3 normalized() {
-        // little hack to avoid division by zero
-        // courtesy of Chipmunk Physics
-        //   https://github.com/slembcke/Chipmunk2D/blob/edf83e5603c5a0a104996bd816fca6d3facedd6a/include/chipmunk/cpVect.h
-        return (*this) * ( 1.0f / (len() + FLT_MIN) );
     }
 };
 
-using point3 = vec3;
-using color = vec3;
+inline vec3 operator+(const vec3 a, const vec3 b) {
+    return { a.x + b.x, a.y + b.y, a.z + b.z };
+}
+inline vec3 operator-(const vec3 a, const vec3 b) {
+    return { a.x - b.x, a.y - b.y, a.z - b.z };
+}
+inline vec3 operator*(const vec3 v, double s) {
+    return { v.x * s, v.y * s, v.z * s };
+}
+inline vec3 operator*(double s, const vec3 v) {
+    return { v.x * s, v.y * s, v.z * s };
+}
+inline vec3 operator/(double s, const vec3 v) {
+    return (1 / s) * v;
+}
+inline vec3 operator/(const vec3 v, double s) {
+    return (1 / s) * v;
+}
 
-
-inline float dot(vec3 a, vec3 b) {
+inline double dot(vec3 a, vec3 b) {
     return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
 }
 
@@ -111,5 +107,16 @@ inline vec3 cross(vec3 a, vec3 b) {
         (a.x * b.y) - (a.y * b.x)
     };
 }
+
+inline vec3 normalize(vec3 v) {
+    // little hack to avoid division by zero
+    // courtesy of Chipmunk Physics
+    //   https://github.com/slembcke/Chipmunk2D/blob/edf83e5603c5a0a104996bd816fca6d3facedd6a/include/chipmunk/cpVect.h
+    return v * ( 1.0f / (v.len() + FLT_MIN) );
+}
+
+
+using point3 = vec3;
+using color = vec3;
 
 #endif
