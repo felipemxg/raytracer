@@ -68,11 +68,11 @@ struct vec3 {
         return *this;
     }
 
-    inline double lensq() {
+    inline double lensq() const {
         return (x * x) + (y * y) + (z * z);
     }
 
-    inline double len() {
+    inline double len() const {
         return sqrt(lensq());
     }
 };
