@@ -2,7 +2,7 @@
 
 #ifdef WITH_AVX
   #include "vec3_simd.h"
-#elseif
+#else
   #include "vec3.h"
 #endif
 
