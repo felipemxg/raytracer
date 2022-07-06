@@ -69,7 +69,7 @@ struct vec3 {
         return *this;
     }
 
-    inline double lensq() {
+    inline double lensq() const {
         double res[4];
         __m256d r = _mm256_set_pd(0, z, y, x);
         __m256d out = _mm256_mul_pd(r, r);
@@ -77,7 +77,7 @@ struct vec3 {
         return res[0] + res[1] + res[2];
     }
 
-    inline double len() {
+    inline double len() const {
         return sqrt(lensq());
     }
 };
