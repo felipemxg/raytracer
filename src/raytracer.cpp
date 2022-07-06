@@ -66,7 +66,7 @@ int RaytracerRun(SDL_Surface *renderbuffer) {
             auto v = double(j) / (image_height - 1);
             Ray ray(origin, lower_left_corner + u*horizontal + v*vertical - origin);
             color px_color = RayColor(ray);
-            WriteColor(renderbuffer, px_color, i, j);
+            WriteColor(renderbuffer, px_color, i, (image_height - 1 - j));
         }
     }
 
