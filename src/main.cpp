@@ -1,64 +1,51 @@
-#include <iostream>
-#include "vec3.h"
-#include "ray.h"
+#include "SDL2/SDL_keycode.h"
+#include "SDL2/SDL.h"
+#include "raytracer.cpp"
 
-double HitSphere(const point3 center, double radius, const Ray r) {
-    vec3 oc = r.origin - center;
-    auto a = dot(r.direction, r.direction);
-    auto b = 2.0 * dot(oc, r.direction);
-    auto c = dot(oc, oc) - radius*radius;
-    auto discriminant = b*b - 4*a*c;
-    if (discriminant < 0) {
-        return -1.0;
-    } else {
-        return (-b - sqrt(discriminant)) / (2.0*a);
-    }
-}
 
-color RayColor(const Ray r) {
-    auto t =  HitSphere(point3(0, 0, -1), 0.5, r);
-    if (t > 0.0) {
-        vec3 N = normalize(r.At(t) - vec3(0, 0, -1));
-        return 0.5 * color(N + 1);
+int main(int argc, char * argv[]) {
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+        fprintf(stderr, "error: failed to init SDL: %s\n", SDL_GetError());
+        return 1;
     }
 
-    vec3 unit_direction = normalize(r.direction);
-    t = 0.5 * ((unit_direction.y) + 1.0);
-    return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
-}
+    auto window = SDL_CreateWindow(
+            "Raytracer",
+            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+            1280, 720,
+            0);
+    if (window == nullptr) {
+        fprintf(stderr, "error: failed to create window: %s\n", SDL_GetError());
+        return 1;
+    }
 
-void WriteColor(std::ostream &out, color px_color) {
-    out << static_cast<int>(255.999 * px_color.r) << ' '
-        << static_cast<int>(255.999 * px_color.g) << ' '
-        << static_cast<int>(255.999 * px_color.b) << '\n';
-}
+    auto screen = SDL_GetWindowSurface(window);
 
-int main() {
-    const auto aspect_ratio = 16.0 / 9.0;
+    auto renderbuffer = SDL_CreateRGBSurfaceWithFormat(0,
+            image_width,
+            image_height,
+            32,
+            SDL_PIXELFORMAT_RGBA32);
+    if (renderbuffer == nullptr) {
+        fprintf(stderr, "error: failed to create surface: %s\n", SDL_GetError());
+        return 1;
+    }
 
-    const int image_width = 400;
-    const int image_height = static_cast<int>(image_width / aspect_ratio);
+    RaytracerRun(renderbuffer);
 
-    auto viewport_height = 2.0;
-    auto viewport_width = aspect_ratio * viewport_height;
-    auto focal_length = 1.0;
-
-    auto origin = point3(0, 0, 0);
-    auto horizontal = vec3(viewport_width, 0, 0);
-    auto vertical = vec3(0, viewport_height, 0);
-    auto lower_left_corner = origin - horizontal/2 - vertical/2 - vec3(0, 0, focal_length);
-
-
-    std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
-
-    for (int j = image_height - 1; j >= 0; --j) {
-        for (int i = 0; i < image_width; ++i) {
-            auto u = double(i) / (image_width - 1);
-            auto v = double(j) / (image_height - 1);
-            Ray ray(origin, lower_left_corner + u*horizontal + v*vertical - origin);
-            color px_color = RayColor(ray);
-            WriteColor(std::cout, px_color);
+    bool quit = false;
+    SDL_Event event;
+    while (!quit) {
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) quit = true;
+            else if (event.type == SDL_KEYDOWN
+                    && event.key.keysym.sym == SDLK_ESCAPE)
+                quit = true;
         }
+
+        SDL_FillRect(screen, nullptr, 0);
+        SDL_BlitSurface(renderbuffer, nullptr, screen, nullptr);
+        SDL_UpdateWindowSurface(window);
     }
 
     return 0;
